@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CEO XB — Live Now</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; background: #CBD5E0; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; }
+
+  .app { width: 100%; max-width: 390px; min-height: 100vh; background: #F7F9FB; position: relative; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* Header */
+  .header { background: #062C50; padding: 48px 20px 0; }
+  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .logo { color: #fff; font-weight: 800; font-size: 20px; letter-spacing: -0.3px; }
+  .logo span { color: #4DB8E8; }
+  .bell-wrap { position: relative; cursor: pointer; }
+  .bell-dot { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; border-radius: 50%; background: #D87903; border: 2px solid #062C50; }
+  .page-title { font-weight: 800; font-size: 26px; color: #fff; margin-bottom: 20px; letter-spacing: -0.4px; }
+
+  /* Tabs */
+  .tabs { display: flex; }
+  .tab-btn { font-family: 'Plus Jakarta Sans', sans-serif; background: none; border: none; border-bottom: 2.5px solid transparent; padding: 0 0 14px; margin-right: 32px; font-size: 15px; min-height: 44px; cursor: pointer; color: rgba(255,255,255,0.5); font-weight: 400; transition: color 0.15s, border-color 0.15s; }
+  .tab-btn.active { color: #4DB8E8; font-weight: 800; border-bottom-color: #4DB8E8; }
+
+  /* Scroll area */
+  .scroll-area { flex: 1; overflow-y: auto; padding-bottom: 80px; }
+  .scroll-area::-webkit-scrollbar { display: none; }
+
+  /* Tab panels */
+  .tab-panel { display: none; padding: 20px 20px 0; }
+  .tab-panel.active { display: block; }
+
+  /* Section label */
+  .section-label { font-size: 11px; font-weight: 800; color: #5D666F; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 14px; }
+
+  /* Event card */
+  .event-card { background: #fff; border-radius: 16px; border: 1px solid #DDE3EA; margin-bottom: 16px; overflow: hidden; }
+  .event-card.live { border-color: #0C4C6F; box-shadow: 0 2px 12px rgba(12,76,111,0.12); }
+  .event-tag { background: #EDF2F7; padding: 6px 16px; font-size: 12px; font-weight: 500; color: #5D666F; letter-spacing: 0.02em; }
+  .event-body { padding: 16px 16px 0; }
+  .event-title { font-weight: 800; font-size: 17px; color: #000; line-height: 1.3; margin-bottom: 4px; }
+  .event-subtitle { font-size: 13px; color: #5D666F; margin-bottom: 10px; }
+  .meta-pills { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .meta-pill { display: inline-flex; align-items: center; gap: 4px; background: #EDF2F7; border-radius: 9999px; padding: 4px 10px; font-size: 12px; color: #5D666F; }
+  .meta-pill svg { flex-shrink: 0; }
+  .event-desc { font-size: 14px; color: #000; line-height: 1.6; margin-bottom: 0; border-top: 1px solid #EDF2F7; padding: 0 0 0 0; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.3s ease, margin 0.3s ease; }
+  .event-desc.open { max-height: 300px; opacity: 1; padding: 12px 0 12px 0; margin-bottom: 12px; }
+  .attendees-btn { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; min-height: 44px; padding: 4px 0; background: none; border: none; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; }
+  .attendees-label { font-size: 13px; color: #106E9E; font-weight: 500; }
+  .avatar-stack { display: flex; }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .avatar span { color: #fff; font-weight: 800; font-size: 10px; line-height: 1; }
+  .avatar-overflow { background: #EDF2F7; }
+  .avatar-overflow span { color: #5D666F; font-size: 9px; font-weight: 800; }
+  .event-actions { display: flex; gap: 8px; padding-bottom: 16px; align-items: center; }
+  .action-btn { flex: 1; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500; font-size: 15px; padding: 12px 8px; border-radius: 9999px; min-height: 44px; cursor: pointer; transition: background 0.15s; border: none; background: #062C50; color: #fff; }
+  .action-btn.selected { background: #106E9E; }
+  .expand-btn { width: 44px; height: 44px; border-radius: 9999px; border: none; background: #062C50; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; color: #fff; font-size: 18px; transition: background 0.15s; }
+
+  /* Recent activity */
+  .activity-section { margin-top: 8px; }
+  .activity-card { background: #fff; border-radius: 12px; border: 1px solid #DDE3EA; margin-bottom: 10px; overflow: hidden; }
+  .activity-row { width: 100%; display: flex; align-items: center; padding: 14px 16px; gap: 12px; min-height: 56px; text-align: left; background: none; border: none; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; }
+  .activity-icon { width: 36px; height: 36px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .activity-meta { font-size: 13px; color: #5D666F; font-weight: 500; }
+  .activity-title { font-size: 15px; font-weight: 500; color: #000; line-height: 1.3; }
+  .activity-chevron { margin-left: auto; color: #5D666F; font-size: 16px; flex-shrink: 0; }
+  .activity-detail { border-top: 1px solid #EDF2F7; padding: 0 16px; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.3s ease; }
+  .activity-detail.open { max-height: 200px; opacity: 1; padding: 12px 16px; }
+  .activity-detail p { font-size: 14px; color: #000; line-height: 1.6; }
+
+  /* Milestones */
+  .milestone-intro { font-size: 13px; color: #5D666F; margin-bottom: 16px; line-height: 1.5; }
+  .milestone-cat { background: #fff; border-radius: 16px; border: 1px solid #DDE3EA; margin-bottom: 12px; overflow: hidden; }
+  .cat-header { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 16px; min-height: 52px; background: none; border: none; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; }
+  .cat-header-left { display: flex; align-items: center; gap: 10px; }
+  .cat-counter { width: 36px; height: 36px; border-radius: 9999px; background: #062C50; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .cat-counter span { color: #fff; font-size: 13px; font-weight: 800; }
+  .cat-label { font-weight: 800; font-size: 16px; color: #000; }
+  .cat-body { border-top: 0px solid #EDF2F7; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.35s ease, opacity 0.25s ease, border-width 0.3s; }
+  .cat-body.open { max-height: 1000px; opacity: 1; border-top: 1px solid #EDF2F7; }
+  .milestone-row { display: flex; align-items: flex-start; padding: 14px 16px; border-bottom: 1px solid #EDF2F7; gap: 12px; }
+  .milestone-check { width: 24px; height: 24px; min-width: 24px; border-radius: 6px; border: 1.5px solid #B0BAC5; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-top: 2px; flex-shrink: 0; transition: background 0.15s, border-color 0.15s; }
+  .milestone-check.done { background: #062C50; border-color: #062C50; }
+  .milestone-check svg { display: none; }
+  .milestone-check.done svg { display: block; }
+  .milestone-text { font-size: 15px; font-weight: 500; color: #000; line-height: 1.4; }
+  .milestone-text.done { color: #5D666F; text-decoration: line-through; font-weight: 400; }
+  .milestone-date-row { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+  .milestone-date { font-size: 13px; color: #5D666F; }
+  .edit-btn { display: inline-flex; align-items: center; gap: 3px; color: #106E9E; font-size: 12px; font-weight: 500; background: none; border: none; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; padding-left: 4px; min-height: 32px; }
+
+  /* Bottom nav */
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 390px; background: #0A3761; display: flex; z-index: 50; }
+  .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 0 18px; gap: 3px; min-height: 64px; position: relative; background: none; border: none; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; }
+  .nav-btn.active::before { content: ''; position: absolute; top: 0; left: 25%; right: 25%; height: 2px; background: #106E9E; border-radius: 0 0 2px 2px; }
+  .nav-label { font-size: 11px; color: rgba(255,255,255,0.45); font-weight: 400; }
+  .nav-btn.active .nav-label { color: #fff; font-weight: 500; }
+
+  /* Bottom sheet overlay */
+  .sheet-overlay { position: fixed; inset: 0; background: rgba(6,44,80,0); z-index: 200; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; pointer-events: none; transition: background 0.3s ease; }
+  .sheet-overlay.open { background: rgba(6,44,80,0.5); pointer-events: all; }
+  .sheet { background: #fff; border-radius: 20px 20px 0 0; padding: 20px 20px 40px; max-height: 80vh; overflow-y: auto; width: 100%; max-width: 390px; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1); }
+  .sheet-overlay.open .sheet { transform: translateY(0); }
+  .sheet-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .sheet-title { font-weight: 800; font-size: 18px; color: #000; }
+  .sheet-close { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 9999px; background: #EDF2F7; border: none; cursor: pointer; font-size: 18px; color: #5D666F; }
+  .attendee-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #EDF2F7; }
+  .attendee-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .attendee-avatar span { color: #fff; font-weight: 800; font-size: 14px; }
+  .attendee-name { font-weight: 500; font-size: 15px; color: #000; }
+  .attendee-company { font-size: 13px; color: #5D666F; }
+
+  /* Edit date sheet */
+  .edit-intro { font-size: 14px; color: #5D666F; margin-bottom: 12px; }
+  .date-input { width: 100%; padding: 12px 14px; font-size: 16px; border: 1px solid #000; border-radius: 8px; margin-bottom: 16px; outline: none; font-family: 'Plus Jakarta Sans', sans-serif; }
+  .save-btn { width: 100%; background: #0C4C6F; color: #fff; font-weight: 500; font-size: 17px; padding: 14px 0; border-radius: 9999px; min-height: 50px; border: none; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 88px; left: 50%; transform: translateX(-50%); background: #062C50; color: #fff; font-size: 14px; font-weight: 500; padding: 10px 20px; border-radius: 9999px; white-space: nowrap; pointer-events: none; z-index: 300; opacity: 0; transition: opacity 0.2s; }
+  .toast.show { opacity: 1; }
+
+  /* SVG icons inline */
+  svg { display: inline-block; vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <div class="logo">ceo <span>XB</span></div>
+      <div class="bell-wrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="bell-dot"></div>
+      </div>
+    </div>
+    <div class="page-title">Live Now</div>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="events">Events</button>
+      <button class="tab-btn" data-tab="milestones">Milestones</button>
+    </div>
+  </div>
+
+  <!-- Scroll area -->
+  <div class="scroll-area">
+
+    <!-- Events panel -->
+    <div class="tab-panel active" id="panel-events">
+      <div class="section-label">Up next</div>
+
+      <!-- Event 1: Live -->
+      <div class="event-card live" id="card-e1">
+        <div class="event-body">
+          <div class="event-title">FDA 510(k) Strategy Session</div>
+          <div class="event-subtitle">With Thomas Reiter, former FDA reviewer</div>
+          <div class="meta-pills">
+            <div class="meta-pill">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5D666F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Today · 2:00 PM CET
+            </div>
+            <div class="meta-pill">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5D666F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              Zoom
+            </div>
+          </div>
+          <div class="event-desc" id="desc-e1">Closed-door session on navigating the 510(k) pathway for Class II devices. Bring your open questions — Thomas will pressure-test your submission strategy.</div>
+          <button class="attendees-btn" onclick="openAttendees('e1')">
+            <div class="avatar-stack" id="stack-e1"></div>
+            <span class="attendees-label">5 attending</span>
+          </button>
+          <div class="event-actions">
+            <button class="action-btn" id="interested-e1" onclick="toggleInterested('e1')">Interested</button>
+            <button class="expand-btn" onclick="toggleDesc('e1')" id="expand-e1">&#8964;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Event 2: Upcoming -->
+      <div class="event-card" id="card-e2">
+        <div class="event-tag">In 3 days</div>
+        <div class="event-body">
+          <div class="event-title">Reimbursement Roundtable</div>
+          <div class="event-subtitle">CPT coding &amp; CMS coverage decisions</div>
+          <div class="meta-pills">
+            <div class="meta-pill">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5D666F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Thu Apr 28 · 3:00 PM CET
+            </div>
+            <div class="meta-pill">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5D666F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              CEO XB Platform
+            </div>
+          </div>
+          <div class="event-desc" id="desc-e2">Peer discussion on reimbursement strategy. Three cohort members will share their CPT/HCPCS applications — what worked, what didn't, and what they wish they'd known.</div>
+          <button class="attendees-btn" onclick="openAttendees('e2')">
+            <div class="avatar-stack" id="stack-e2"></div>
+            <span class="attendees-label">3 attending</span>
+          </button>
+          <div class="event-actions">
+            <button class="action-btn" id="interested-e2" onclick="toggleInterested('e2')">Interested</button>
+            <button class="expand-btn" onclick="toggleDesc('e2')" id="expand-e2">&#8964;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Event 3: Upcoming -->
+      <div class="event-card" id="card-e3">
+        <div class="event-tag">Next week</div>
+        <div class="event-body">
+          <div class="event-title">Investor Pitch Clinic</div>
+          <div class="event-subtitle">Series A readiness for Life Sciences</div>
+          <div class="meta-pills">
+            <div class="meta-pill">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5D666F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Tue May 2 · 4:00 PM CET
+            </div>
+            <div class="meta-pill">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5D666F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              Zoom
+            </div>
+          </div>
+          <div class="event-desc" id="desc-e3">Bring your deck. Experienced US healthcare investors will review your narrative, financials slide, and milestones. Feedback is candid and confidential.</div>
+          <button class="attendees-btn" onclick="openAttendees('e3')">
+            <div class="avatar-stack" id="stack-e3"></div>
+            <span class="attendees-label">2 attending</span>
+          </button>
+          <div class="event-actions">
+            <button class="action-btn" id="interested-e3" onclick="toggleInterested('e3')">Interested</button>
+            <button class="expand-btn" onclick="toggleDesc('e3')" id="expand-e3">&#8964;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent activity -->
+      <div class="activity-section">
+        <div class="section-label">Recent activity</div>
+
+        <div class="activity-card">
+          <button class="activity-row" onclick="toggleActivity('a1')">
+            <div class="activity-icon" style="background:#106E9E">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div style="flex:1">
+              <div class="activity-meta">Attended · Apr 20</div>
+              <div class="activity-title">US Market Entry Briefing</div>
+            </div>
+            <span class="activity-chevron" id="chev-a1">&#8964;</span>
+          </button>
+          <div class="activity-detail" id="detail-a1">
+            <p>You marked this session as attended. 6 cohort members were present. Key topic: distribution partnerships with GPOs.</p>
+          </div>
+        </div>
+
+        <div class="activity-card">
+          <button class="activity-row" onclick="toggleActivity('a2')">
+            <div class="activity-icon" style="background:#062C50">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </div>
+            <div style="flex:1">
+              <div class="activity-meta">Completed · Apr 18</div>
+              <div class="activity-title">Regulatory pathway determined</div>
+            </div>
+            <span class="activity-chevron" id="chev-a2">&#8964;</span>
+          </button>
+          <div class="activity-detail" id="detail-a2">
+            <p>You marked this milestone complete. Your pathway: 510(k) for Class II. Next: schedule your Q-Sub meeting with FDA.</p>
+          </div>
+        </div>
+
+        <div class="activity-card">
+          <button class="activity-row" onclick="toggleActivity('a3')">
+            <div class="activity-icon" style="background:#106E9E">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div style="flex:1">
+              <div class="activity-meta">Interested · Apr 15</div>
+              <div class="activity-title">Investor Pitch Clinic</div>
+            </div>
+            <span class="activity-chevron" id="chev-a3">&#8964;</span>
+          </button>
+          <div class="activity-detail" id="detail-a3">
+            <p>You expressed interest. CEO XB will send you the Zoom link 24 hours before the session.</p>
+          </div>
+        </div>
+
+        <div class="activity-card">
+          <button class="activity-row" onclick="toggleActivity('a4')">
+            <div class="activity-icon" style="background:#062C50">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </div>
+            <div style="flex:1">
+              <div class="activity-meta">Completed · Feb 2024</div>
+              <div class="activity-title">Pre-seed / angel round closed</div>
+            </div>
+            <span class="activity-chevron" id="chev-a4">&#8964;</span>
+          </button>
+          <div class="activity-detail" id="detail-a4">
+            <p>You marked this milestone complete. Amount: not recorded. You can add notes by editing this milestone.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Milestones panel -->
+    <div class="tab-panel" id="panel-milestones">
+      <div class="section-label">Your founder journey</div>
+      <p class="milestone-intro">Stage-based, not calendar-based. Every company moves at its own pace — edit dates to match yours.</p>
+
+      <!-- Funding -->
+      <div class="milestone-cat">
+        <button class="cat-header" onclick="toggleCat('funding')">
+          <div class="cat-header-left">
+            <div class="cat-counter"><span id="count-funding">2/4</span></div>
+            <span class="cat-label">Funding</span>
+          </div>
+          <span id="chev-funding" style="color:#5D666F;font-size:18px">&#8964;</span>
+        </button>
+        <div class="cat-body open" id="cat-funding">
+          <div class="milestone-row">
+            <button class="milestone-check done" id="check-m1" onclick="toggleMilestone('m1','funding')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <div style="flex:1">
+              <div class="milestone-text done" id="text-m1">Pre-seed / angel round closed</div>
+              <div class="milestone-date-row">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5D666F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span class="milestone-date" id="date-m1">Mar 2024</span>
+                <button class="edit-btn" onclick="openEdit('m1')">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#106E9E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Edit
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="milestone-row">
+            <button class="milestone-check done" id="check-m2" onclick="toggleMilestone('m2','funding')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <div style="flex:1">
+              <div class="milestone-text done" id="text-m2">NIH SBIR/STTR Phase I awarded</div>
+              <div class="milestone-date-row">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5D666F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span class="milestone-date" id="date-m2">Aug 2024</span>
+                <button class="edit-btn" onclick="openEdit('m2')">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#106E9E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Edit
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="milestone-row">
+            <button class="milestone-check" id="check-m3" onclick="toggleMilestone('m3','funding')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <div style="flex:1">
+              <div class="milestone-text" id="text-m3">Seed round closed</div>
+              <div class="milestone-date-row">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5D666F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span class="milestone-date" id="date-m3">Jan 2025</span>
+                <button class="edit-btn" onclick="openEdit('m3')">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#106E9E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Edit
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="milestone-row">
+            <button class="milestone-check" id="check-m4" onclick="toggleMilestone('m4','funding')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <div style="flex:1">
+              <div class="milestone-text" id="text-m4">Series A closed</div>
+              <div class="milestone-date-row">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5D666F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span class="milestone-date" id="date-m4">Q3 2025</span>
+                <button class="edit-btn" onclick="openEdit('m4')">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#106E9E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Edit
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Regulatory -->
+      <div class="milestone-cat">
+        <button class="cat-header" onclick="toggleCat('regulatory')">
+          <div class="cat-header-left">
+            <div class="cat-counter"><span id="count-regulatory">1/4</span></div>
+            <span class="cat-label">Regulatory</span>
+          </div>
+          <span id="chev-regulatory" style="color:#5D666F;font-size:18px">&#8964;</span>
+        </button>
+        <div class="cat-body" id="cat-regulatory">
+          <div class="milestone-row">
+            <button class="milestone-check done" id="check-m5" onclick="toggleMilestone('m5','regulatory')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <div style="flex:1">
+              <div class="milestone-text done" id="text-m5">Regulatory pathway determined (510(k))</div>
+              <div class="milestone-date-row">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5D666F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span class="milestone-date" id="date-m5">Jun 2024</span>
+                <button class="edit-btn" onclick="openEdit('m5')">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#106E9E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Edit
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="milestone-row">
+            <button class="milestone-check" id="check-m6" onclick="toggleMilestone('m6','regulatory')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <div style="flex:1">
+              <div class="milestone-text" id="text-m6">FDA pre-submission (Q-Sub) meeting held</div>
+              <div class="milestone-date-row">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5D666F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span class="milestone-date" id="date-m6">Nov 2024</span>
+                <button class="edit-btn" onclick="openEdit('m6')">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#106E9E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Edit
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="milestone-row">
+            <button class="milestone-check" id="check-m7" onclick="toggleMilestone('m7','regulatory')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <div style="flex:1">
+              <div class="milestone-text" id="text-m7">510(k) submitted</div>
+              <div class="milestone-date-row">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5D666F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span class="milestone-date" id="date-m7">Apr 2025</span>
+                <button class="edit-btn" onclick="openEdit('m7')">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#106E9E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Edit
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="milestone-row">
+            <button class="milestone-check" id="check-m8" onclick="toggleMilestone('m8','regulatory')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <div style="flex:1">
+              <div class="milestone-text" id="text-m8">510(k) cleared</div>
+              <div class="milestone-date-row">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5D666F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span class="milestone-date" id="date-m8">Oct 2025</span>
+                <button class="edit-btn" onclick="openEdit('m8')">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#106E9E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Edit
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Commercial -->
+      <div class="milestone-cat">
+        <button class="cat-header" onclick="toggleCat('commercial')">
+          <div class="cat-header-left">
+            <div class="cat-counter"><span id="count-commercial">0/3</span></div>
+            <span class="cat-label">Commercial</span>
+          </div>
+          <span id="chev-commercial" style="color:#5D666F;font-size:18px">&#8964;</span>
+        </button>
+        <div class="cat-body" id="cat-commercial">
+          <div class="milestone-row">
+            <button class="milestone-check" id="check-m9" onclick="toggleMilestone('m9','commercial')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <div style="flex:1">
+              <div class="milestone-text" id="text-m9">First commercial hire</div>
+              <div class="milestone-date-row">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5D666F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span class="milestone-date" id="date-m9">Q2 2025</span>
+                <button class="edit-btn" onclick="openEdit('m9')">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#106E9E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Edit
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="milestone-row">
+            <button class="milestone-check" id="check-m10" onclick="toggleMilestone('m10','commercial')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <div style="flex:1">
+              <div class="milestone-text" id="text-m10">Limited market release (5–10 KOL sites)</div>
+              <div class="milestone-date-row">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5D666F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span class="milestone-date" id="date-m10">Q4 2025</span>
+                <button class="edit-btn" onclick="openEdit('m10')">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#106E9E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Edit
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="milestone-row">
+            <button class="milestone-check" id="check-m11" onclick="toggleMilestone('m11','commercial')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <div style="flex:1">
+              <div class="milestone-text" id="text-m11">Full commercial launch</div>
+              <div class="milestone-date-row">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5D666F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span class="milestone-date" id="date-m11">Q2 2026</span>
+                <button class="edit-btn" onclick="openEdit('m11')">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#106E9E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Edit
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end scroll-area -->
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <button class="nav-btn" onclick="setNav(this)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-btn active" onclick="setNav(this)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <span class="nav-label">Learn</span>
+    </button>
+    <button class="nav-btn" onclick="setNav(this)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+      <span class="nav-label">Connect</span>
+    </button>
+    <button class="nav-btn" onclick="setNav(this)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span class="nav-label">Discuss</span>
+    </button>
+    <button class="nav-btn" onclick="setNav(this)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="nav-label">Profile</span>
+    </button>
+  </nav>
+
+</div><!-- end app -->
+
+<!-- Attendee bottom sheet -->
+<div class="sheet-overlay" id="attendee-sheet" onclick="closeSheet('attendee-sheet')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-header">
+      <span class="sheet-title">Also attending</span>
+      <button class="sheet-close" onclick="closeSheet('attendee-sheet')">&#10005;</button>
+    </div>
+    <div id="attendee-list"></div>
+  </div>
+</div>
+
+<!-- Edit date bottom sheet -->
+<div class="sheet-overlay" id="edit-sheet" onclick="closeSheet('edit-sheet')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-header">
+      <span class="sheet-title">Edit target date</span>
+      <button class="sheet-close" onclick="closeSheet('edit-sheet')">&#10005;</button>
+    </div>
+    <p class="edit-intro">Every founder's journey moves at its own pace. Update this to match yours.</p>
+    <input class="date-input" id="date-input" type="text" placeholder="e.g. Q2 2025 or Jun 2025">
+    <button class="save-btn" onclick="saveDate()">Save date</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // Data
+  const ATTENDEES = {
+    e1: [
+      { initials: 'AH', name: 'Annika Halvorsen', company: 'NovaScan Medical', color: '#106E9E' },
+      { initials: 'PB', name: 'Pieter Bosman', company: 'OrthoLink BV', color: '#0C4C6F' },
+      { initials: 'EL', name: 'Elise Laurent', company: 'CardioPath SA', color: '#062C50' },
+      { initials: 'MK', name: 'Marcus Kjær', company: 'BioSignal AS', color: '#106E9E' },
+      { initials: 'SV', name: 'Sofia Verhoeven', company: 'MedTrace Europe', color: '#0A3761' },
+    ],
+    e2: [
+      { initials: 'TN', name: 'Tobias Nilsson', company: 'PulseFlow AB', color: '#0C4C6F' },
+      { initials: 'FR', name: 'Fiona Rowan', company: 'NeuroAlign Ltd', color: '#106E9E' },
+      { initials: 'DM', name: 'Dirk Mertens', company: 'StereoScan GmbH', color: '#062C50' },
+    ],
+    e3: [
+      { initials: 'AH', name: 'Annika Halvorsen', company: 'NovaScan Medical', color: '#106E9E' },
+      { initials: 'MK', name: 'Marcus Kjær', company: 'BioSignal AS', color: '#0C4C6F' },
+    ],
+  };
+
+  const MILESTONE_TOTALS = { funding: 4, regulatory: 4, commercial: 3 };
+
+  // Build avatar stacks on load
+  function buildStacks() {
+    ['e1','e2','e3'].forEach(id => {
+      const stack = document.getElementById('stack-' + id);
+      const list = ATTENDEES[id];
+      const visible = list.slice(0, 4);
+      stack.innerHTML = visible.map((a, i) =>
+        `<div class="avatar" style="background:${a.color};margin-left:${i===0?0:-8}px;z-index:${visible.length-i}">
+          <span>${a.initials}</span>
+        </div>`
+      ).join('') + (list.length > 4
+        ? `<div class="avatar avatar-overflow" style="margin-left:-8px"><span>+${list.length-4}</span></div>`
+        : '');
+    });
+  }
+  buildStacks();
+
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Interested toggle
+  function toggleInterested(id) {
+    const btn = document.getElementById('interested-' + id);
+    const isActive = btn.classList.contains('selected');
+    btn.classList.toggle('selected', !isActive);
+    showToast(isActive ? 'Interest removed.' : 'Interest noted.');
+  }
+
+  // Expand/collapse event description
+  function toggleDesc(id) {
+    const desc = document.getElementById('desc-' + id);
+    const btn = document.getElementById('expand-' + id);
+    const open = desc.classList.toggle('open');
+    btn.innerHTML = open ? '&#8963;' : '&#8964;';
+  }
+
+  // Activity expand
+  function toggleActivity(id) {
+    const detail = document.getElementById('detail-' + id);
+    const chev = document.getElementById('chev-' + id);
+    const open = detail.classList.toggle('open');
+    chev.innerHTML = open ? '&#8963;' : '&#8964;';
+  }
+
+  // Category accordion
+  function toggleCat(id) {
+    const body = document.getElementById('cat-' + id);
+    const chev = document.getElementById('chev-' + id);
+    const open = body.classList.toggle('open');
+    chev.innerHTML = open ? '&#8963;' : '&#8964;';
+  }
+
+  // Milestone toggle
+  const milestoneDone = {};
+  // Pre-seed done milestones
+  ['m1','m2','m5'].forEach(id => { milestoneDone[id] = true; });
+
+  function toggleMilestone(id, cat) {
+    milestoneDone[id] = !milestoneDone[id];
+    const check = document.getElementById('check-' + id);
+    const text = document.getElementById('text-' + id);
+    check.classList.toggle('done', milestoneDone[id]);
+    text.classList.toggle('done', milestoneDone[id]);
+    updateCount(cat);
+    showToast(milestoneDone[id] ? 'Milestone marked complete.' : 'Marked incomplete.');
+  }
+
+  function updateCount(cat) {
+    const milestones = document.querySelectorAll(`[id^="check-"][class*="done"]`);
+    // Count per category
+    const catMap = {
+      funding: ['m1','m2','m3','m4'],
+      regulatory: ['m5','m6','m7','m8'],
+      commercial: ['m9','m10','m11'],
+    };
+    const ids = catMap[cat];
+    const count = ids.filter(id => milestoneDone[id]).length;
+    document.getElementById('count-' + cat).textContent = count + '/' + MILESTONE_TOTALS[cat];
+  }
+
+  // Attendee sheet
+  function openAttendees(id) {
+    const list = ATTENDEES[id];
+    document.getElementById('attendee-list').innerHTML = list.map(a =>
+      `<div class="attendee-row">
+        <div class="attendee-avatar" style="background:${a.color}"><span>${a.initials}</span></div>
+        <div>
+          <div class="attendee-name">${a.name}</div>
+          <div class="attendee-company">${a.company}</div>
+        </div>
+      </div>`
+    ).join('');
+    document.getElementById('attendee-sheet').classList.add('open');
+  }
+
+  // Edit date sheet
+  let editingId = null;
+  function openEdit(id) {
+    editingId = id;
+    document.getElementById('date-input').value = document.getElementById('date-' + id).textContent;
+    document.getElementById('edit-sheet').classList.add('open');
+  }
+
+  function saveDate() {
+    const val = document.getElementById('date-input').value.trim();
+    if (editingId && val) {
+      document.getElementById('date-' + editingId).textContent = val;
+    }
+    closeSheet('edit-sheet');
+    showToast('Date updated.');
+  }
+
+  function closeSheet(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+
+  // Bottom nav
+  function setNav(btn) {
+    document.querySelectorAll('.nav-btn').forEach(b => {
+      b.classList.remove('active');
+      b.querySelectorAll('svg').forEach(s => s.setAttribute('stroke', 'rgba(255,255,255,0.45)'));
+      b.querySelector('svg').setAttribute('stroke-width', '1.5');
+    });
+    btn.classList.add('active');
+    btn.querySelector('svg').setAttribute('stroke', '#fff');
+    btn.querySelector('svg').setAttribute('stroke-width', '2');
+  }
+
+  // Toast
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+</script>
+</body>
+</html>
