@@ -1,0 +1,14 @@
+{
+  "name": "ceoxb-up-next-prototype",
+  "version": "1.0.0",
+  "description": "CEO XB Up Next Prototype",
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "echo 'Static HTML - no build required'",
+    "lint": "echo 'No linter configured'"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^1.4.1"
+  },
+  "devDependencies": {}
+}
